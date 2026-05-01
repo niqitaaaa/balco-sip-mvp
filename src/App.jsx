@@ -96,12 +96,12 @@ export default function App() {
 
   function renderContent() {
     if (role === 'employee') {
-      return <EmployeeView key={employeeId} employeeId={employeeId} />;
+      return <EmployeeView key={employeeId} employeeId={employeeId} activeNav={activeNav} />;
     }
     if (role === 'manager') {
-      return <ManagerView managerId={managerId} />;
+      return <ManagerView managerId={managerId} activeNav={activeNav} />;
     }
-    return <AdminView />;
+    return <AdminView activeNav={activeNav} />;
   }
 
   const activeEmp = employees.find(e => e.id === employeeId);
