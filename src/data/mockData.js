@@ -1,4 +1,8 @@
 // ─── Training Programs ────────────────────────────────────────────────────────
+// bcs: Business Criticality Score 1–5 (Safety/Compliance 35%, Role Coverage 25%,
+//      Skill Scarcity 25%, Operational Impact 15%)
+// certification: whether programme issues a formal certification
+// certValidityMonths: certification validity period in months
 export const trainingPrograms = [
   {
     id: 'tp-01',
@@ -12,6 +16,8 @@ export const trainingPrograms = [
     l3Score: 61,
     completions: 48,
     managerResponseRate: 74,
+    bcs: 5,
+    certification: false,
   },
   {
     id: 'tp-02',
@@ -25,6 +31,9 @@ export const trainingPrograms = [
     l3Score: 55,
     completions: 35,
     managerResponseRate: 81,
+    bcs: 5,
+    certification: true,
+    certValidityMonths: 12,
   },
   {
     id: 'tp-03',
@@ -38,6 +47,8 @@ export const trainingPrograms = [
     l3Score: 70,
     completions: 22,
     managerResponseRate: 91,
+    bcs: 3,
+    certification: false,
   },
   {
     id: 'tp-04',
@@ -51,6 +62,9 @@ export const trainingPrograms = [
     l3Score: 48,
     completions: 19,
     managerResponseRate: 67,
+    bcs: 3,
+    certification: true,
+    certValidityMonths: 24,
   },
   {
     id: 'tp-05',
@@ -64,6 +78,8 @@ export const trainingPrograms = [
     l3Score: 63,
     completions: 31,
     managerResponseRate: 88,
+    bcs: 4,
+    certification: false,
   },
   {
     id: 'tp-06',
@@ -77,6 +93,9 @@ export const trainingPrograms = [
     l3Score: 58,
     completions: 56,
     managerResponseRate: 72,
+    bcs: 5,
+    certification: true,
+    certValidityMonths: 12,
   },
   {
     id: 'tp-07',
@@ -90,6 +109,8 @@ export const trainingPrograms = [
     l3Score: 51,
     completions: 41,
     managerResponseRate: 65,
+    bcs: 3,
+    certification: false,
   },
   {
     id: 'tp-08',
@@ -103,6 +124,8 @@ export const trainingPrograms = [
     l3Score: 60,
     completions: 28,
     managerResponseRate: 78,
+    bcs: 5,
+    certification: false,
   },
   {
     id: 'tp-09',
@@ -116,6 +139,8 @@ export const trainingPrograms = [
     l3Score: 54,
     completions: 24,
     managerResponseRate: 69,
+    bcs: 2,
+    certification: false,
   },
   {
     id: 'tp-10',
@@ -129,6 +154,8 @@ export const trainingPrograms = [
     l3Score: 50,
     completions: 17,
     managerResponseRate: 63,
+    bcs: 2,
+    certification: false,
   },
 ];
 
@@ -152,8 +179,8 @@ export const skillDefinitions = {
   'sk-data': { name: 'Data Analysis', category: 'Operations' },
 };
 
-// Proficiency scale: 0 = None, 1 = Awareness, 2 = Working, 3 = Skilled, 4 = Expert
-export const proficiencyLabels = ['None', 'Awareness', 'Working', 'Skilled', 'Expert'];
+// Proficiency scale: 0 = None, 1 = Awareness, 2 = Developing, 3 = Competent, 4 = Proficient
+export const proficiencyLabels = ['None', 'Awareness', 'Developing', 'Competent', 'Proficient'];
 
 // ─── Employee Profiles ────────────────────────────────────────────────────────
 export const employees = [
@@ -370,3 +397,149 @@ export const adminStats = {
   trainingsThisQuarter: 186,
   feedbackPending: 43,
 };
+
+// ─── IJP Listings ─────────────────────────────────────────────────────────────
+export const ijpListings = [
+  {
+    id: 'ijp-01',
+    title: 'Senior Shift Engineer',
+    department: 'Smelting',
+    grade: 'E4',
+    location: 'Korba, Chhattisgarh',
+    closingDate: '2026-05-31',
+    postedDate: '2026-04-15',
+    requiredSkills: {
+      'sk-crane': 3,
+      'sk-confined': 3,
+      'sk-ppe': 4,
+      'sk-electrical': 3,
+      'sk-emergency': 3,
+      'sk-communication': 3,
+    },
+  },
+  {
+    id: 'ijp-02',
+    title: 'Lead Safety Officer',
+    department: 'HSE',
+    grade: 'E5',
+    location: 'Korba, Chhattisgarh',
+    closingDate: '2026-06-10',
+    postedDate: '2026-04-20',
+    requiredSkills: {
+      'sk-confined': 4,
+      'sk-ppe': 4,
+      'sk-hygiene': 4,
+      'sk-emergency': 4,
+      'sk-reporting': 3,
+      'sk-communication': 4,
+    },
+  },
+  {
+    id: 'ijp-03',
+    title: 'L&D Manager',
+    department: 'Human Resources',
+    grade: 'E5',
+    location: 'Korba, Chhattisgarh',
+    closingDate: '2026-05-25',
+    postedDate: '2026-04-10',
+    requiredSkills: {
+      'sk-facilitation': 4,
+      'sk-coaching': 4,
+      'sk-data': 3,
+      'sk-reporting': 3,
+      'sk-communication': 4,
+      'sk-people': 3,
+    },
+  },
+];
+
+// ─── Next-Grade Skill Requirements (for Promotion Readiness) ─────────────────
+// Maps employee ID → required skills for the next grade up
+export const nextGradeSkills = {
+  'emp-01': { // E3 → E4 Shift Engineer
+    'sk-crane': 3, 'sk-confined': 3, 'sk-ppe': 4, 'sk-electrical': 3,
+    'sk-emergency': 3, 'sk-communication': 3, 'sk-people': 2,
+  },
+  'emp-02': { // E4 → E5 Safety Officer
+    'sk-crane': 3, 'sk-confined': 4, 'sk-ppe': 4, 'sk-hygiene': 4,
+    'sk-emergency': 4, 'sk-reporting': 4, 'sk-communication': 3, 'sk-people': 2,
+  },
+  'emp-03': { // E3 → E4 L&D Executive
+    'sk-facilitation': 3, 'sk-coaching': 3, 'sk-data': 3,
+    'sk-reporting': 3, 'sk-communication': 3, 'sk-planning': 2,
+  },
+  'emp-04': { // E4 → E5 Environmental Engineer
+    'sk-ghg': 4, 'sk-reporting': 4, 'sk-data': 4,
+    'sk-hygiene': 3, 'sk-communication': 3, 'sk-people': 2,
+  },
+  'emp-05': { // E5 → E6 Operations Supervisor
+    'sk-people': 4, 'sk-coaching': 4, 'sk-conflict': 4,
+    'sk-planning': 4, 'sk-communication': 4, 'sk-emergency': 3,
+  },
+  'emp-06': { // E5 → E6 HR Business Partner
+    'sk-people': 4, 'sk-coaching': 4, 'sk-conflict': 4,
+    'sk-communication': 4, 'sk-reporting': 3, 'sk-facilitation': 3, 'sk-planning': 2,
+  },
+};
+
+// ─── Employee Certifications ──────────────────────────────────────────────────
+export const employeeCertifications = [
+  {
+    id: 'cert-01',
+    employeeId: 'emp-01',
+    programId: 'tp-06',
+    certName: 'Arc Flash Safety Certification',
+    certBody: 'NFPA',
+    issueDate: '2026-03-15',
+    expiryDate: '2026-06-15', // expiring in ~45 days — triggers 60-day alert
+  },
+  {
+    id: 'cert-02',
+    employeeId: 'emp-02',
+    programId: 'tp-06',
+    certName: 'Arc Flash Safety Certification',
+    certBody: 'NFPA',
+    issueDate: '2026-02-20',
+    expiryDate: '2027-02-20',
+  },
+  {
+    id: 'cert-03',
+    employeeId: 'emp-05',
+    programId: 'tp-06',
+    certName: 'Arc Flash Safety Certification',
+    certBody: 'NFPA',
+    issueDate: '2026-04-01',
+    expiryDate: '2027-04-01',
+  },
+];
+
+// ─── Impact Stories (L4 Self-Reports) ────────────────────────────────────────
+export const impactStories = [
+  {
+    id: 'is-01',
+    employeeId: 'emp-01',
+    trainingId: 'tp-06',
+    submittedDate: '2026-03-25',
+    change: 'I now perform arc flash risk assessments before every electrical maintenance task. I identified two potential arc flash hazards in Potline 3 that had not been flagged previously.',
+    magnitude: 'Significant improvement',
+    managerAcknowledged: 'Y',
+  },
+  {
+    id: 'is-02',
+    employeeId: 'emp-02',
+    trainingId: 'tp-08',
+    submittedDate: '2026-04-10',
+    change: 'I redesigned the emergency muster point signage and updated the incident command structure chart for HSE Bay 2 following the programme.',
+    magnitude: 'Moderate improvement',
+    managerAcknowledged: 'Y',
+  },
+  {
+    id: 'is-03',
+    employeeId: 'emp-06',
+    trainingId: 'tp-05',
+    submittedDate: '2026-03-15',
+    change: 'I now structure 1:1s using a coaching framework rather than directive feedback. Team satisfaction improved in the last quarterly pulse survey.',
+    magnitude: 'Significant improvement',
+    managerAcknowledged: 'N',
+  },
+];
