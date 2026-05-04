@@ -513,6 +513,111 @@ export const employeeCertifications = [
   },
 ];
 
+// ─── Skills Acquisition History (F1.4) ───────────────────────────────────────
+// eventType: 'training' | 'certification' | 'manager_validated' | 'assessment'
+export const skillsHistory = [
+  { id: 'sh-01', employeeId: 'emp-01', skillId: 'sk-electrical', eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 1, newLevel: 2, date: '2026-03-10' },
+  { id: 'sh-02', employeeId: 'emp-01', skillId: 'sk-ppe',        eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 2, newLevel: 3, date: '2026-03-10' },
+  { id: 'sh-03', employeeId: 'emp-01', skillId: 'sk-electrical', eventType: 'certification',     sourceLabel: 'Arc Flash Safety Certification (NFPA)',      prevLevel: 2, newLevel: 3, date: '2026-03-15' },
+  { id: 'sh-04', employeeId: 'emp-01', skillId: 'sk-hygiene',    eventType: 'training',          sourceLabel: 'Industrial Hygiene & Occupational Health',   prevLevel: 0, newLevel: 1, date: '2026-04-05' },
+  { id: 'sh-05', employeeId: 'emp-02', skillId: 'sk-electrical', eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 1, newLevel: 2, date: '2026-02-15' },
+  { id: 'sh-06', employeeId: 'emp-02', skillId: 'sk-ppe',        eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 3, newLevel: 4, date: '2026-02-15' },
+  { id: 'sh-07', employeeId: 'emp-02', skillId: 'sk-emergency',  eventType: 'training',          sourceLabel: 'Emergency Response & Incident Command',     prevLevel: 2, newLevel: 3, date: '2026-04-08' },
+  { id: 'sh-08', employeeId: 'emp-02', skillId: 'sk-communication', eventType: 'training',       sourceLabel: 'Emergency Response & Incident Command',     prevLevel: 1, newLevel: 2, date: '2026-04-08' },
+  { id: 'sh-09', employeeId: 'emp-02', skillId: 'sk-confined',   eventType: 'manager_validated', sourceLabel: 'Validated by Deepak Nair',                  prevLevel: 2, newLevel: 3, date: '2026-04-20' },
+  { id: 'sh-10', employeeId: 'emp-03', skillId: 'sk-people',     eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 1, newLevel: 2, date: '2026-03-20' },
+  { id: 'sh-11', employeeId: 'emp-03', skillId: 'sk-coaching',   eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 1, newLevel: 2, date: '2026-03-20' },
+  { id: 'sh-12', employeeId: 'emp-03', skillId: 'sk-conflict',   eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 0, newLevel: 1, date: '2026-03-20' },
+  { id: 'sh-13', employeeId: 'emp-04', skillId: 'sk-hygiene',    eventType: 'training',          sourceLabel: 'Industrial Hygiene & Occupational Health',  prevLevel: 1, newLevel: 2, date: '2026-04-12' },
+  { id: 'sh-14', employeeId: 'emp-05', skillId: 'sk-electrical', eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 0, newLevel: 1, date: '2026-04-01' },
+  { id: 'sh-15', employeeId: 'emp-05', skillId: 'sk-ppe',        eventType: 'training',          sourceLabel: 'Arc Flash & Electrical Safety',             prevLevel: 2, newLevel: 3, date: '2026-04-01' },
+  { id: 'sh-16', employeeId: 'emp-06', skillId: 'sk-people',     eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 2, newLevel: 3, date: '2026-02-20' },
+  { id: 'sh-17', employeeId: 'emp-06', skillId: 'sk-coaching',   eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 2, newLevel: 3, date: '2026-02-20' },
+  { id: 'sh-18', employeeId: 'emp-06', skillId: 'sk-conflict',   eventType: 'training',          sourceLabel: '1st Time Manager Programme',                prevLevel: 2, newLevel: 3, date: '2026-02-20' },
+  { id: 'sh-19', employeeId: 'emp-06', skillId: 'sk-planning',   eventType: 'training',          sourceLabel: 'Project Management Fundamentals',           prevLevel: 0, newLevel: 1, date: '2026-03-18' },
+  { id: 'sh-20', employeeId: 'emp-06', skillId: 'sk-communication', eventType: 'training',       sourceLabel: 'Project Management Fundamentals',           prevLevel: 3, newLevel: 4, date: '2026-03-18' },
+  { id: 'sh-21', employeeId: 'emp-06', skillId: 'sk-coaching',   eventType: 'manager_validated', sourceLabel: 'Validated by Kavitha Rao',                  prevLevel: 3, newLevel: 3, date: '2026-04-15' },
+];
+
+// ─── Badges (F6.4) ───────────────────────────────────────────────────────────
+export const badgeDefinitions = {
+  'badge-cert':      { name: 'Certification Holder',    icon: '🏅', description: 'Holds a valid functional certification',               colour: 'bg-purple-100 text-purple-700 border-purple-200' },
+  'badge-critical':  { name: 'Critical Skill Proficient', icon: '⭐', description: 'Reached Proficient level on a BCS 4–5 skill',        colour: 'bg-amber-100 text-amber-700 border-amber-200' },
+  'badge-fast':      { name: 'Fast Learner',            icon: '⚡', description: 'Completed 3+ programmes in a quarter',                colour: 'bg-blue-100 text-blue-700 border-blue-200' },
+  'badge-validated': { name: 'Manager Validated',       icon: '✅', description: 'At least one skill validated by a manager',           colour: 'bg-green-100 text-green-700 border-green-200' },
+  'badge-impact':    { name: 'Impact Reporter',         icon: '💡', description: 'Submitted an L4 impact story',                       colour: 'bg-teal-100 text-teal-700 border-teal-200' },
+};
+
+export const employeeBadges = [
+  { id: 'eb-01', employeeId: 'emp-01', badgeId: 'badge-cert',      earnedDate: '2026-03-15' },
+  { id: 'eb-02', employeeId: 'emp-01', badgeId: 'badge-impact',     earnedDate: '2026-03-25' },
+  { id: 'eb-03', employeeId: 'emp-02', badgeId: 'badge-cert',       earnedDate: '2026-02-20' },
+  { id: 'eb-04', employeeId: 'emp-02', badgeId: 'badge-validated',  earnedDate: '2026-04-20' },
+  { id: 'eb-05', employeeId: 'emp-02', badgeId: 'badge-impact',     earnedDate: '2026-04-10' },
+  { id: 'eb-06', employeeId: 'emp-05', badgeId: 'badge-cert',       earnedDate: '2026-04-01' },
+  { id: 'eb-07', employeeId: 'emp-06', badgeId: 'badge-fast',       earnedDate: '2026-03-31' },
+  { id: 'eb-08', employeeId: 'emp-06', badgeId: 'badge-validated',  earnedDate: '2026-04-15' },
+  { id: 'eb-09', employeeId: 'emp-06', badgeId: 'badge-impact',     earnedDate: '2026-03-15' },
+];
+
+// ─── ROI Data (F7.3) ──────────────────────────────────────────────────────────
+// Costs in INR (₹). isolationPct = % of benefit attributable to training.
+export const programROI = [
+  {
+    id: 'roi-01',
+    programId: 'tp-01',
+    cohortLabel: 'Q1 FY2026',
+    cohortSize: 48,
+    costs: { vendorFee: 85000, salaryCost: 92160, travelAccom: 18000, materials: 9600, coordination: 5000 },
+    benefits: [
+      { category: 'Incident cost avoided',  amount: 480000, assumption: '2 near-miss reductions × avg incident cost ₹2.4L' },
+      { category: 'Productivity gain',       amount: 144000, assumption: '1.5% uptime improvement × 48 operators' },
+    ],
+    isolationPct: 65,
+  },
+  {
+    id: 'roi-02',
+    programId: 'tp-02',
+    cohortLabel: 'Q1 FY2026',
+    cohortSize: 35,
+    costs: { vendorFee: 60000, salaryCost: 50400, travelAccom: 8000, materials: 5000, coordination: 3000 },
+    benefits: [
+      { category: 'Incident cost avoided',        amount: 520000, assumption: 'Confined space incidents avg ₹14.9L; 0.35 incident reduction estimate' },
+      { category: 'Certification compliance value', amount: 80000, assumption: 'Regulatory fine avoidance per statutory audit' },
+    ],
+    isolationPct: 70,
+  },
+  {
+    id: 'roi-03',
+    programId: 'tp-05',
+    cohortLabel: 'Q1 FY2026',
+    cohortSize: 31,
+    costs: { vendorFee: 155000, salaryCost: 149520, travelAccom: 45000, materials: 21000, coordination: 12000 },
+    benefits: [
+      { category: 'Productivity gain', amount: 280000, assumption: '5% team productivity improvement × 31 managers' },
+      { category: 'Retention benefit',  amount: 180000, assumption: '10% reduction in first-year manager attrition; avg replacement cost ₹3.6L × 5 people' },
+    ],
+    isolationPct: 55,
+  },
+  {
+    id: 'roi-04',
+    programId: 'tp-06',
+    cohortLabel: 'Q1 FY2026',
+    cohortSize: 56,
+    costs: { vendorFee: 42000, salaryCost: 53760, travelAccom: 0, materials: 11200, coordination: 4000 },
+    benefits: [
+      { category: 'Incident cost avoided', amount: 620000, assumption: 'Arc flash incidents avg ₹11L; 1 incident reduction per year est.' },
+    ],
+    isolationPct: 60,
+  },
+];
+
+// ─── Manager Response Rate by Department (F4.2) ───────────────────────────────
+export const managerResponseByDept = [
+  { department: 'Operations', managerId: 'mgr-01', managerName: 'Deepak Nair',    sent: 18, responded: 14, rate: 78 },
+  { department: 'HR',         managerId: 'mgr-02', managerName: 'Kavitha Rao',    sent: 14, responded:  8, rate: 57 },
+];
+
 // ─── Impact Stories (L4 Self-Reports) ────────────────────────────────────────
 export const impactStories = [
   {

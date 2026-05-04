@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   employees, trainingPrograms, skillDefinitions, proficiencyLabels,
   ijpListings, nextGradeSkills, employeeCertifications, impactStories,
+  skillsHistory, badgeDefinitions, employeeBadges,
 } from '../data/mockData';
 import ProficiencyBar from '../components/ProficiencyBar';
 import GapBadge from '../components/GapBadge';
@@ -139,6 +140,11 @@ export default function EmployeeView({ employeeId, activeNav }) {
   const gradeNum = parseInt(emp.grade.replace('E', ''), 10);
   const nextGradeLabel = `E${gradeNum + 1}`;
 
+  // ── Badges & History ─────────────────────────────────────────────────────────
+  const myBadges = employeeBadges.filter(b => b.employeeId === emp.id);
+  const myHistory = [...skillsHistory.filter(h => h.employeeId === emp.id)]
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
   if (activeNav === 'career') {
     return (
       <div className="p-6 max-w-4xl">
@@ -155,6 +161,32 @@ export default function EmployeeView({ employeeId, activeNav }) {
           <h1 className="text-xl font-semibold text-gray-900">Career Readiness</h1>
           <p className="text-sm text-gray-500 mt-0.5">{emp.role} · {emp.department} · Grade {emp.grade}</p>
         </div>
+
+        {/* Badges */}
+        {myBadges.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded mb-6">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h2 className="text-sm font-semibold text-gray-800">My Badges</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Development milestones — visible on your Darwinbox profile</p>
+            </div>
+            <div className="px-4 py-4 flex flex-wrap gap-3">
+              {myBadges.map(eb => {
+                const def = badgeDefinitions[eb.badgeId];
+                if (!def) return null;
+                return (
+                  <div key={eb.id} className={`flex items-center gap-2 px-3 py-2 rounded border text-sm font-medium ${def.colour}`}>
+                    <span className="text-base leading-none">{def.icon}</span>
+                    <div>
+                      <p className="font-semibold text-xs">{def.name}</p>
+                      <p className="text-[10px] opacity-75 mt-0.5">{def.description}</p>
+                      <p className="text-[10px] opacity-60 mt-0.5">Earned {eb.earnedDate}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Promotion Readiness */}
         <div className="bg-white border border-gray-200 rounded mb-6">
@@ -517,6 +549,61 @@ export default function EmployeeView({ employeeId, activeNav }) {
                     </span>
                   ) : null;
                 })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Skills Acquisition History (F1.4) */}
+      <div className="bg-white border border-gray-200 rounded mt-6">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800">Skills Acquisition History</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Immutable audit trail of your skill development events</p>
+          </div>
+          <span className="text-xs text-gray-400">{myHistory.length} events</span>
+        </div>
+        {myHistory.length === 0 ? (
+          <div className="px-4 py-6 text-center text-sm text-gray-400">No history events yet.</div>
+        ) : (
+          <div className="px-4 py-3">
+            <div className="relative">
+              {/* vertical line */}
+              <div className="absolute left-3.5 top-0 bottom-0 w-px bg-gray-200" />
+              <div className="space-y-4">
+                {myHistory.map(evt => {
+                  const skillName = skillDefinitions[evt.skillId]?.name ?? evt.skillId;
+                  const typeConfig = {
+                    training:          { dot: 'bg-vedanta-green',  label: 'Training',          textColour: 'text-vedanta-green' },
+                    certification:     { dot: 'bg-purple-500',     label: 'Certification',     textColour: 'text-purple-700' },
+                    manager_validated: { dot: 'bg-vedanta-blue',   label: 'Manager Validated', textColour: 'text-vedanta-blue' },
+                    assessment:        { dot: 'bg-gray-400',       label: 'Assessment',        textColour: 'text-gray-600' },
+                  }[evt.eventType] ?? { dot: 'bg-gray-300', label: evt.eventType, textColour: 'text-gray-600' };
+                  return (
+                    <div key={evt.id} className="flex gap-4 pl-2">
+                      <div className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 border-2 border-white shadow-sm ${typeConfig.dot}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-gray-900">{skillName}</span>
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 ${typeConfig.textColour}`}>
+                            {typeConfig.label}
+                          </span>
+                          {evt.newLevel !== evt.prevLevel && (
+                            <span className="text-xs text-gray-500">
+                              {proficiencyLabels[evt.prevLevel]} → <span className="font-medium text-vedanta-green">{proficiencyLabels[evt.newLevel]}</span>
+                            </span>
+                          )}
+                          {evt.newLevel === evt.prevLevel && (
+                            <span className="text-xs text-gray-400">Level confirmed: {proficiencyLabels[evt.newLevel]}</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{evt.sourceLabel}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{evt.date}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
