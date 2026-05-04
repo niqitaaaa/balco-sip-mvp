@@ -681,7 +681,7 @@ export default function AdminView({ activeNav }) {
           </tbody>
         </table>
         <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
-          Managers below 50% response rate are highlighted amber; below 25% triggers escalation to their reporting officer.
+          Managers below 50% response rate are highlighted in amber; below 25% triggers escalation to their reporting officer.
           Individual rates visible to CHRO and HR — not published org-wide.
         </div>
       </div>
