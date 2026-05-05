@@ -1,4 +1,5 @@
-import { trainingPrograms, adminStats, skillDefinitions, employees, employeeCertifications } from '../data/mockData';
+import { useState } from 'react';
+import { trainingPrograms, adminStats, skillDefinitions, employees, employeeCertifications, programROI, managerResponseByDept } from '../data/mockData';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function certExpiryStatus(expiryDate) {
@@ -51,7 +52,283 @@ function ResponseRateBar({ rate }) {
   );
 }
 
+// ── ROI Calculator helpers ─────────────────────────────────────────────────────
+function calcROI(costs, benefits, isolationPct) {
+  const totalCost = Object.values(costs).reduce((s, v) => s + Number(v || 0), 0);
+  const totalBenefit = benefits.reduce((s, b) => s + Number(b.amount || 0), 0);
+  const isolatedBenefit = Math.round(totalBenefit * (isolationPct / 100));
+  const netBenefit = isolatedBenefit - totalCost;
+  const bcr = totalCost > 0 ? (isolatedBenefit / totalCost).toFixed(2) : '—';
+  const roi = totalCost > 0 ? Math.round(((isolatedBenefit - totalCost) / totalCost) * 100) : 0;
+  const paybackMonths = isolatedBenefit > 0 ? Math.ceil((totalCost / (isolatedBenefit / 12))) : null;
+  return { totalCost, totalBenefit, isolatedBenefit, netBenefit, bcr, roi, paybackMonths };
+}
+
+function fmtINR(n) {
+  if (n >= 1e7) return `₹${(n / 1e7).toFixed(2)}Cr`;
+  if (n >= 1e5) return `₹${(n / 1e5).toFixed(1)}L`;
+  return `₹${n.toLocaleString('en-IN')}`;
+}
+
 export default function AdminView({ activeNav }) {
+  const [roiSelected, setRoiSelected] = useState(null);
+  const [calcMode, setCalcMode] = useState(false); // show interactive calculator
+  const [calcForm, setCalcForm] = useState({
+    programId: '',
+    cohortSize: '',
+    vendorFee: '', salaryCost: '', travelAccom: '', materials: '', coordination: '',
+    benefitAmount: '', benefitCategory: 'Incident cost avoided', benefitAssumption: '',
+    isolationPct: '60',
+  });
+
+  if (activeNav === 'roi') {
+    // ── ROI Calculator tab ──────────────────────────────────────────────────────
+    const roiRows = programROI.map(r => {
+      const tp = trainingPrograms.find(t => t.id === r.programId);
+      const { totalCost, isolatedBenefit, netBenefit, bcr, roi, paybackMonths } = calcROI(r.costs, r.benefits, r.isolationPct);
+      return { ...r, tp, totalCost, isolatedBenefit, netBenefit, bcr, roi, paybackMonths };
+    });
+
+    const selectedRow = roiSelected ? roiRows.find(r => r.id === roiSelected) : null;
+
+    // interactive calculator derived values
+    const calcCosts = {
+      vendorFee: calcForm.vendorFee, salaryCost: calcForm.salaryCost,
+      travelAccom: calcForm.travelAccom, materials: calcForm.materials,
+      coordination: calcForm.coordination,
+    };
+    const calcBenefits = calcForm.benefitAmount
+      ? [{ amount: calcForm.benefitAmount, category: calcForm.benefitCategory }] : [];
+    const calcResult = calcROI(calcCosts, calcBenefits, Number(calcForm.isolationPct) || 0);
+
+    return (
+      <div className="p-6 max-w-5xl">
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">ROI Calculator</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Phillips Level 5 ROI — cost vs. isolated benefit per programme cohort</p>
+          </div>
+          <button
+            onClick={() => { setCalcMode(v => !v); setRoiSelected(null); }}
+            className="px-3 py-1.5 text-xs font-medium rounded bg-vedanta-blue text-white hover:bg-blue-700 transition-colors"
+          >
+            {calcMode ? '← Back to Summary' : '+ New Calculation'}
+          </button>
+        </div>
+
+        {calcMode ? (
+          /* ── Interactive ROI Calculator ── */
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white border border-gray-200 rounded p-5">
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-4">Inputs</p>
+
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Programme</label>
+                <select
+                  value={calcForm.programId}
+                  onChange={e => setCalcForm(f => ({ ...f, programId: e.target.value }))}
+                  className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white"
+                >
+                  <option value="">Select programme…</option>
+                  {trainingPrograms.map(tp => (
+                    <option key={tp.id} value={tp.id}>{tp.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-4 mb-2">Costs (₹)</p>
+              {[
+                ['vendorFee', 'Vendor fee'],
+                ['salaryCost', 'Participant salary cost'],
+                ['travelAccom', 'Travel & accommodation'],
+                ['materials', 'Materials'],
+                ['coordination', 'Coordination / admin'],
+              ].map(([key, label]) => (
+                <div key={key} className="flex items-center gap-2 mb-2">
+                  <label className="w-44 text-xs text-gray-600 flex-shrink-0">{label}</label>
+                  <input
+                    type="number" min="0"
+                    value={calcForm[key]}
+                    onChange={e => setCalcForm(f => ({ ...f, [key]: e.target.value }))}
+                    className="flex-1 text-xs border border-gray-200 rounded px-2 py-1.5"
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-4 mb-2">Benefit</p>
+              <div className="mb-2">
+                <label className="block text-xs text-gray-600 mb-1">Category</label>
+                <select
+                  value={calcForm.benefitCategory}
+                  onChange={e => setCalcForm(f => ({ ...f, benefitCategory: e.target.value }))}
+                  className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white"
+                >
+                  {['Incident cost avoided', 'Productivity gain', 'Retention benefit', 'Certification compliance value', 'External cost avoided', 'Other'].map(v => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="w-44 text-xs text-gray-600 flex-shrink-0">Total benefit (₹)</label>
+                <input
+                  type="number" min="0"
+                  value={calcForm.benefitAmount}
+                  onChange={e => setCalcForm(f => ({ ...f, benefitAmount: e.target.value }))}
+                  className="flex-1 text-xs border border-gray-200 rounded px-2 py-1.5"
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="w-44 text-xs text-gray-600 flex-shrink-0">Isolation factor (%)</label>
+                <input
+                  type="number" min="0" max="100"
+                  value={calcForm.isolationPct}
+                  onChange={e => setCalcForm(f => ({ ...f, isolationPct: e.target.value }))}
+                  className="flex-1 text-xs border border-gray-200 rounded px-2 py-1.5"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-0.5">% of benefit attributable to training (vs. other factors)</p>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded p-5">
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-4">Results (Live)</p>
+              <div className="space-y-3">
+                {[
+                  ['Total Cost',        fmtINR(calcResult.totalCost),        'text-gray-900'],
+                  ['Total Benefit',     fmtINR(calcResult.totalBenefit),      'text-gray-900'],
+                  ['Isolated Benefit',  fmtINR(calcResult.isolatedBenefit),   'text-vedanta-blue'],
+                  ['Net Benefit',       fmtINR(calcResult.netBenefit),        calcResult.netBenefit >= 0 ? 'text-vedanta-green' : 'text-red-600'],
+                  ['Benefit-Cost Ratio', `${calcResult.bcr}x`,               calcResult.bcr >= 1 ? 'text-vedanta-green' : 'text-red-600'],
+                  ['ROI',               `${calcResult.roi}%`,                calcResult.roi >= 0 ? 'text-vedanta-green' : 'text-red-600'],
+                  ['Payback Period',    calcResult.paybackMonths ? `${calcResult.paybackMonths} months` : '—', 'text-gray-700'],
+                ].map(([label, value, colour]) => (
+                  <div key={label} className="flex items-center justify-between border-b border-gray-50 pb-2">
+                    <span className="text-xs text-gray-500">{label}</span>
+                    <span className={`text-sm font-bold ${colour}`}>{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 p-3 rounded bg-blue-50 border border-blue-100">
+                <p className="text-xs font-semibold text-vedanta-blue mb-1">How to read this</p>
+                <p className="text-xs text-gray-600">
+                  An ROI of <strong>{calcResult.roi}%</strong> means that for every ₹1 invested, BALCO receives ₹{calcResult.bcr} in isolated benefit —
+                  after applying a {calcForm.isolationPct || 0}% isolation factor to exclude non-training influences.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ── ROI Summary Table ── */
+          <>
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              {[
+                { label: 'Programmes with ROI data', value: roiRows.length },
+                { label: 'Total Investment (Q1)', value: fmtINR(roiRows.reduce((s, r) => s + r.totalCost, 0)), colour: 'text-gray-900' },
+                { label: 'Total Isolated Benefit', value: fmtINR(roiRows.reduce((s, r) => s + r.isolatedBenefit, 0)), colour: 'text-vedanta-green' },
+                { label: 'Avg ROI', value: `${Math.round(roiRows.reduce((s, r) => s + r.roi, 0) / roiRows.length)}%`, colour: 'text-vedanta-green' },
+              ].map(card => (
+                <div key={card.label} className="bg-white border border-gray-200 rounded p-4">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{card.label}</p>
+                  <p className={`text-2xl font-bold ${card.colour ?? 'text-gray-900'}`}>{card.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded mb-6">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-gray-800">Programme ROI Summary — Q1 FY2026</h2>
+                <span className="text-xs text-gray-400">Click a row to see cost breakdown</span>
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                  <tr>
+                    <th className="px-4 py-2.5 text-left font-medium">Programme</th>
+                    <th className="px-4 py-2.5 text-center font-medium">Cohort</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Total Cost</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Isolated Benefit</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Net Benefit</th>
+                    <th className="px-4 py-2.5 text-center font-medium">BCR</th>
+                    <th className="px-4 py-2.5 text-center font-medium">ROI</th>
+                    <th className="px-4 py-2.5 text-center font-medium">Payback</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {roiRows.map(r => (
+                    <>
+                      <tr
+                        key={r.id}
+                        onClick={() => setRoiSelected(roiSelected === r.id ? null : r.id)}
+                        className="hover:bg-blue-50 cursor-pointer"
+                      >
+                        <td className="px-4 py-3 font-medium text-gray-900">{r.tp?.name ?? r.programId}</td>
+                        <td className="px-4 py-3 text-center text-gray-500">{r.cohortSize}</td>
+                        <td className="px-4 py-3 text-right text-gray-700">{fmtINR(r.totalCost)}</td>
+                        <td className="px-4 py-3 text-right text-vedanta-blue font-medium">{fmtINR(r.isolatedBenefit)}</td>
+                        <td className={`px-4 py-3 text-right font-medium ${r.netBenefit >= 0 ? 'text-vedanta-green' : 'text-red-600'}`}>{fmtINR(r.netBenefit)}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`font-semibold ${r.bcr >= 1.5 ? 'text-vedanta-green' : r.bcr >= 1 ? 'text-amber-600' : 'text-red-600'}`}>{r.bcr}x</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`font-bold ${r.roi >= 50 ? 'text-vedanta-green' : r.roi >= 0 ? 'text-amber-600' : 'text-red-600'}`}>{r.roi}%</span>
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-500 text-xs">{r.paybackMonths ? `${r.paybackMonths}mo` : '—'}</td>
+                      </tr>
+                      {roiSelected === r.id && (
+                        <tr key={`${r.id}-detail`}>
+                          <td colSpan={8} className="px-6 py-4 bg-blue-50 border-l-2 border-vedanta-blue">
+                            <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                <p className="text-xs font-semibold text-vedanta-blue uppercase tracking-wide mb-2">Cost Breakdown</p>
+                                {Object.entries(r.costs).map(([k, v]) => (
+                                  <div key={k} className="flex justify-between text-xs py-0.5">
+                                    <span className="text-gray-600 capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
+                                    <span className="font-medium text-gray-800">{fmtINR(Number(v))}</span>
+                                  </div>
+                                ))}
+                                <div className="flex justify-between text-xs py-1 border-t border-blue-200 mt-1 font-semibold">
+                                  <span className="text-gray-700">Total Cost</span>
+                                  <span className="text-gray-900">{fmtINR(r.totalCost)}</span>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-vedanta-blue uppercase tracking-wide mb-2">Benefits — {r.isolationPct}% Isolation Applied</p>
+                                {r.benefits.map((b, i) => (
+                                  <div key={i} className="mb-2">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-gray-600 font-medium">{b.category}</span>
+                                      <span className="font-medium text-gray-800">{fmtINR(b.amount)}</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">{b.assumption}</p>
+                                  </div>
+                                ))}
+                                <div className="flex justify-between text-xs py-1 border-t border-blue-200 mt-1 font-semibold">
+                                  <span className="text-gray-700">Isolated Benefit</span>
+                                  <span className="text-vedanta-green">{fmtINR(r.isolatedBenefit)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded px-4 py-3 text-xs text-blue-700">
+              <span className="font-semibold">Methodology note:</span> ROI = (Isolated Benefit − Total Cost) / Total Cost × 100. Benefits are isolated using
+              the Phillips isolation technique — only the percentage attributable to training is counted. Assumptions are documented per programme-cohort and
+              are available for audit review.
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   if (activeNav === 'programmes') {
     // ── Programmes tab ─────────────────────────────────────────────────────────
 
@@ -360,6 +637,52 @@ export default function AdminView({ activeNav }) {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Manager Response Rate by Department (F4.2) */}
+      <div className="bg-white border border-gray-200 rounded mb-6">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800">Manager Response Rate — by Department</h2>
+          <span className="text-xs text-gray-400">Feedback requests responded within 30 days · F4.2</span>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+            <tr>
+              <th className="px-4 py-2.5 text-left font-medium">Department</th>
+              <th className="px-4 py-2.5 text-left font-medium">Manager</th>
+              <th className="px-4 py-2.5 text-center font-medium">Requests Sent</th>
+              <th className="px-4 py-2.5 text-center font-medium">Responded</th>
+              <th className="px-4 py-2.5 text-left font-medium w-48">Response Rate</th>
+              <th className="px-4 py-2.5 text-left font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {managerResponseByDept.map(row => (
+              <tr key={row.managerId} className="hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium text-gray-900">{row.department}</td>
+                <td className="px-4 py-3 text-gray-700">{row.managerName}</td>
+                <td className="px-4 py-3 text-center text-gray-600">{row.sent}</td>
+                <td className="px-4 py-3 text-center text-gray-600">{row.responded}</td>
+                <td className="px-4 py-3 w-48">
+                  <ResponseRateBar rate={row.rate} />
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-0.5 text-xs rounded font-medium ${
+                    row.rate >= 80 ? 'bg-green-100 text-green-700' :
+                    row.rate >= 50 ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {row.rate >= 80 ? 'On Track' : row.rate >= 50 ? 'Needs Attention' : '⚠ Escalate'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-xs text-gray-400">
+          Managers below 50% response rate are highlighted in amber; below 25% triggers escalation to their reporting officer.
+          Individual rates visible to CHRO and HR — not published org-wide.
         </div>
       </div>
 
